@@ -6,22 +6,13 @@
         <v-flex xs2 justify-center row wrap>
             <div style="margin-top: 15%">
                 <v-btn
-                        icon
-                        color="#21dc78"
-                        v-if="showSend"
-                        @click="sendUserMessage"
-                >
-                    <img :src="sendUrl" alt="" width="16px" height="16px">
-                </v-btn>
-                <v-btn
                         dark
-                        v-if="!showSend"
-                        @mousedown.stop.prevent="startSpeechRecognition"
-                        @mouseup.stop.prevent="endSpeechRecognition"
+                        @mousedown.stop.prevent="onMouseDown"
+                        @mouseup.stop.prevent="onMouseUp"
                         icon
-                        :color="!toggle ? '#00a849' : (speaking ? '#21dc78' : '#21dc78')"
+                        :color="!toggle ? '#21dc78' : (speaking ? '#de4540' : '#de5069')"
                 >
-                    <img :src="micUrl" alt="" width="16px" height="16px">
+                    <img :src="showSend ? sendUrl :micUrl " alt="" width="16px" height="16px">
                 </v-btn>
             </div>
 
@@ -61,17 +52,31 @@
     },
     methods: {
       ...mapActions(['sendUserMessage', 'changeInputText', 'clearInput']),
+      onMouseUp() {
+        if (this.showSend) {
+          this.sendUserMessage();
+        }
+        else {
+          this.endSpeechRecognition();
+        }
+      },
+      onMouseDown() {
+        if (!this.showSend) {
+          this.startSpeechRecognition();
+        }
+      },
       checkCompatibility() {
         if (!recognition) {
           this.error = 'Speech Recognition is not available on this browser. Please use Chrome or Firefox';
         }
       },
       endSpeechRecognition() {
-        recognition.stop();
+        console.log('I am stoped');
+        recognition.stop(() => {
+          console.log('sege');
+        });
         this.final_transcript = '';
-        setTimeout(() => {
-          this.toggle = false;
-        }, 300);
+        this.toggle = false;
 
       },
       recognitionStartHandler() {
@@ -112,6 +117,8 @@
         this.interim_transcript = '';
         this.final_transcript = '';
         recognition.start();
+
+        console.log('I am Started');
       },
       capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
